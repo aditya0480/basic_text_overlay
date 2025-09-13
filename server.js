@@ -57,12 +57,22 @@ app.post("/generate", async (req, res) => {
     ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Add centered text
+    // Add centered text with line breaks support
     ctx.font = `50px "CustomFont"`;
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    
+    // Split text by line breaks and render each line
+    const lines = text.split('\n');
+    const lineHeight = 60; // Space between lines
+    const totalHeight = lines.length * lineHeight;
+    const startY = (canvas.height - totalHeight) / 2 + lineHeight / 2;
+    
+    lines.forEach((line, index) => {
+      const y = startY + (index * lineHeight);
+      ctx.fillText(line, canvas.width / 2, y);
+    });
 
     // Save image
     const fileName = `image_${Date.now()}.png`;

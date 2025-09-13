@@ -4,7 +4,8 @@
   <title>Image Generator</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-    input, button { padding: 10px; margin: 10px; width: 300px; }
+    input, button, textarea { padding: 10px; margin: 10px; width: 300px; }
+    textarea { height: 100px; resize: vertical; }
     #preview { margin-top: 20px; }
     img { max-width: 80%; margin-top: 20px; border: 1px solid #ccc; }
   </style>
@@ -12,7 +13,7 @@
 <body>
   <h1>Image Generator</h1>
   <input type="text" id="imageUrl" placeholder="Enter Image URL" />
-  <input type="text" id="text" placeholder="Enter Text" />
+  <textarea id="text" placeholder="Enter Text (supports line breaks)"></textarea>
   <button onclick="generateImage()">Generate</button>
 
   <div id="preview"></div>

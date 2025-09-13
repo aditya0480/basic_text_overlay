@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  webapp:
+    build: .
+    ports:
+      - "5500:5500"
+    environment:
+      - PORT=5500
+      - NODE_ENV=production
+      - FONT_PATH=fonts/TiroDevanagariMarathi-Italic.ttf
+      - IMAGE_PATH=public/images
+      - DOMAIN=http://localhost:5500
+    volumes:
+      # Mount the public/images directory to persist generated images
+      - ./public/images:/app/public/images
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5500', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
