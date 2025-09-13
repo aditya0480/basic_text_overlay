@@ -4,6 +4,7 @@ import { createCanvas, loadImage, registerFont } from "canvas";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import os from 'os';
 
 dotenv.config();
 const app = express();
@@ -113,10 +114,24 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Start the server
-const server = app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log('Server is ready to accept requests...');
+
+
+const networkInterfaces = os.networkInterfaces();
+let serverIp = 'localhost';  // fallback if no public IP is found
+
+for (const iface of Object.values(networkInterfaces)) {
+  for (const config of iface) {
+    if (config.family === 'IPv4' && !config.internal) {
+      serverIp = config.address; // get your actual IPv4 address
+      break;
+    }
+  }
+}
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running at http://${serverIp}:${PORT}`);
 });
+
 
 // Handle server errors
 server.on('error', (error) => {
