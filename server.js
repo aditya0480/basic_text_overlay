@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import { createCanvas, loadImage, registerFont } from "canvas";
+import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -36,6 +37,54 @@ if (!fs.existsSync(fullImagePath)) {
 
 // Serve static files (generated images)
 app.use("/images", express.static(fullImagePath));
+
+// Configure multer for uploads
+const storage = multer.diskStorage({
+  destination: function (_req, _file, cb) {
+    cb(null, fullImagePath);
+  },
+  filename: function (_req, file, cb) {
+    const ext = path.extname(file.originalname) || ".bin";
+    const safeBase = path.basename(file.originalname, path.extname(file.originalname)).replace(/[^a-zA-Z0-9-_\.]/g, "_");
+    cb(null, `${safeBase}_${Date.now()}${ext}`);
+  }
+});
+
+const fileFilter = (_req, file, cb) => {
+  // Allow common image MIME types
+  const allowed = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed"));
+  }
+};
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter
+});
+
+// Upload endpoint
+app.post("/upload", upload.single("file"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const publicUrl = `${DOMAIN}/images/${req.file.filename}`;
+    return res.json({
+      success: true,
+      fileName: req.file.filename,
+      mimeType: req.file.mimetype,
+      size: req.file.size,
+      imageUrl: publicUrl
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "File upload failed" });
+  }
+});
 
 app.post("/generate", async (req, res) => {
   try {
